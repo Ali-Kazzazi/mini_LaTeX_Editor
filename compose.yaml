@@ -1,0 +1,12 @@
+services:
+  editor:
+    build: .
+    image: mini-latex-editor:local
+    init: true
+    ports:
+      - "127.0.0.1:${TEXDESK_DOCKER_PORT:-4030}:4030"
+    volumes:
+      - projects:/data
+
+volumes:
+  projects:

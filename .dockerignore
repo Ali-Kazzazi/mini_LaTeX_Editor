@@ -1,0 +1,10 @@
+# Send only the application sources used by the Dockerfile.
+**
+!package.json
+!package-lock.json
+!scripts/
+!scripts/build.mjs
+!src/
+!src/**
+!server/
+!server/**

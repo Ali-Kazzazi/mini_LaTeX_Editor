@@ -2,7 +2,7 @@
 
 mini_LaTeX_Editor is a local LaTeX editor with an Overleaf-style workspace. Edit your source, compile it with a TeX engine installed on your computer, and preview the PDF beside the editor.
 
-[Quick start](#quick-start) · [Compiler setup](#install-a-compiler) · [First PDF](#compile-your-first-pdf) · [Troubleshooting](#troubleshooting)
+[Quick start](#quick-start) · [Docker](#run-with-docker) · [Compiler setup](#install-a-compiler) · [First PDF](#compile-your-first-pdf) · [Troubleshooting](#troubleshooting)
 
 ![mini_LaTeX_Editor showing the sample LaTeX project, PDF preview, and version history](docs/texdesk-history.png)
 
@@ -13,7 +13,7 @@ mini_LaTeX_Editor is a local LaTeX editor with an Overleaf-style workspace. Edit
 
 ## Quick start
 
-You need **Node.js 22.13 or newer**, npm, and **one** supported LaTeX compiler. Node.js 24 LTS is a good choice. Use Git to clone the repository or select **Code → Download ZIP** on GitHub and extract it. [Download Node.js](https://nodejs.org/en/download)
+For a native installation on **Windows, Linux, or macOS**, you need **Node.js 22.13 or newer**, npm, and **one** supported LaTeX compiler. Node.js 24 LTS is a good choice. The [Docker setup](#run-with-docker) supplies Node.js and TeX Live inside the image. Use Git to clone the repository or select **Code → Download ZIP** on GitHub and extract it. [Download Node.js](https://nodejs.org/en/download)
 
 Clone the project from its [GitHub repository](https://github.com/Ali-Kazzazi/mini_LaTeX_Editor).
 
@@ -34,7 +34,7 @@ npm ci
 npm run setup:compiler
 ~~~
 
-On **macOS or Linux**, [install a compiler](#install-a-compiler) separately. Then build and start mini_LaTeX_Editor from the repository root.
+On **Linux**, [install TeX Live](#tex-live-on-windows-and-linux) through your package manager or install Tectonic and put it on `PATH`. On **macOS**, [install a compiler](#install-a-compiler) separately. Then build and start mini_LaTeX_Editor from the repository root.
 
 ~~~sh
 npm run build
@@ -44,6 +44,35 @@ npm start
 Open **[http://127.0.0.1:4030](http://127.0.0.1:4030)**. Keep the terminal running while you use the app. Press **Ctrl+C** in that terminal to stop it.
 
 On Windows you can also double-click **[start-texdesk.cmd](start-texdesk.cmd)**. It installs npm dependencies or builds the frontend if those files are missing. Install a compiler separately before the first compile.
+
+## Run with Docker
+
+Install Docker with Compose v2. On Windows, use Docker Desktop in Linux container mode. On Linux, use Docker Engine with the Compose plugin. Run the following from the repository root. [Docker installation](https://docs.docker.com/get-docker/) · [Compose installation](https://docs.docker.com/compose/install/)
+
+~~~sh
+docker compose up --build -d
+docker compose ps
+~~~
+
+Open **[http://127.0.0.1:4030](http://127.0.0.1:4030)**. The image includes TeX Live with **pdfLaTeX, XeLaTeX, and LuaLaTeX**, so **Auto** selects pdfLaTeX. The bundled TeX packages are installed during image build. For a template that needs another package or font, add the corresponding Debian package to the [Dockerfile](Dockerfile) and rebuild. XeLaTeX and LuaLaTeX can use fonts installed inside the image.
+
+Compose publishes the port on the host's loopback interface. The `projects` volume stores sources, PDFs, and history at `/data` in the container. These projects are separate from those in the native app's `.data/` directory. Use **Export source** and **Import ZIP** to move a project between them.
+
+~~~sh
+docker compose logs -f editor
+docker compose down
+~~~
+
+Press **Ctrl+C** to exit the log viewer. `docker compose down` keeps the project volume. `docker compose down -v` deletes it and its projects.
+
+If port 4030 is in use, set `TEXDESK_DOCKER_PORT=4031` in a `.env` file beside `compose.yaml`, run `docker compose up -d`, and open [http://127.0.0.1:4031](http://127.0.0.1:4031).
+
+To run with Docker Engine without Compose, use a named volume and bind the published port to loopback.
+
+~~~sh
+docker build -t mini-latex-editor .
+docker run -d --init --name mini-latex-editor -p 127.0.0.1:4030:4030 -v mini-latex-editor-data:/data mini-latex-editor
+~~~
 
 ## Choose an engine
 
@@ -139,6 +168,7 @@ TEXDESK_XELATEX=/Library/TeX/texbin/xelatex npm start
 | `TEXDESK_XELATEX` | Path to XeLaTeX |
 | `TEXDESK_LUALATEX` | Path to LuaLaTeX |
 | `TEXDESK_DATA_DIR` | Local project storage directory. Defaults to `.data/` in the repository |
+| `TEXDESK_HOST` | Server bind address. Defaults to `127.0.0.1` for native runs. The Docker image uses `0.0.0.0` inside the container. |
 | `PORT` | Local HTTP port. Defaults to `4030` |
 
 For a permanent port change in your checkout, edit the default in [server/index.mjs](server/index.mjs), then restart the server and open the URL printed in the terminal.
@@ -233,7 +263,7 @@ For the initial upload from a local folder with no Git history, use these comman
 
 ~~~sh
 git init -b main
-git add .gitignore README.md package.json package-lock.json start-texdesk.cmd src server scripts test docs
+git add .gitignore .dockerignore Dockerfile compose.yaml README.md package.json package-lock.json start-texdesk.cmd src server scripts test docs
 git status --short
 git commit -m "Initial mini_LaTeX_Editor release"
 git remote add origin https://github.com/Ali-Kazzazi/mini_LaTeX_Editor.git

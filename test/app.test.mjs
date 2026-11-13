@@ -55,7 +55,9 @@ test('path traversal, private files, Windows device names, symlinks, and foreign
 test('missing compiler is actionable, not a fake successful preview', async t => {
   const { request, project } = await fixture(t), route = '/projects/' + project.id;
   const result = await request(route + '/compile', 'POST', {});
-  assert.equal(result.status, 503); assert.match(result.data.error, /setup:compiler/); assert.equal((await request(route + '/pdf')).status, 404);
+  assert.equal(result.status, 503);
+  assert.match(result.data.error, process.platform === 'win32' ? /setup:compiler/ : /Install TeX Live/);
+  assert.equal((await request(route + '/pdf')).status, 404);
 });
 
 test('compilation snapshots input, keeps last good PDF after failure, and blocks concurrent builds', async t => {
@@ -80,8 +82,15 @@ test('compilation snapshots input, keeps last good PDF after failure, and blocks
 test('real local compiler builds a multi-file document and reports LaTeX errors', { skip: process.env.TEXDESK_TEST_COMPILER !== '1', timeout: 240000 }, async t => {
   const engines = await detectEngines(); assert.ok(engines.some(e => e.available), 'Install a compiler first.');
   const { request, project, origin } = await fixture(t, { engines }), route = '/projects/' + project.id;
-  await request(route + '/file', 'PUT', { name: 'main.tex', content: String.raw`\documentclass{article}\usepackage{amsmath}\begin{document}\section{Verified locally}\input{chapter}\[e^{i\pi}+1=0\]\end{document}` });
-  await request(route + '/file', 'PUT', { name: 'chapter.tex', content: 'A real multi-file compilation.' });
+  await request(route + '/file', 'PUT', { name: 'main.tex', content: String.raw`\documentclass{article}
+\usepackage{amsmath}
+\begin{document}
+\section{Verified locally}
+\input{chapter}
+\[e^{i\pi}+1=0\]
+\end{document}` });
+  // End the paragraph in the included file so TeX Live attributes the line to it.
+  await request(route + '/file', 'PUT', { name: 'chapter.tex', content: String.raw`A real multi-file compilation.\par` });
   const result = await request(route + '/compile', 'POST', {}); assert.equal(result.data.ok, true, result.data.log);
   const built = (await request(route)).data;
   assert.equal(built.pdf.hasSync, true);

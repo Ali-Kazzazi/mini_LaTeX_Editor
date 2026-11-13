@@ -93,7 +93,7 @@ export function runProcess(command, args, options = {}) {
   return new Promise(resolve => {
     let log = '', settled = false, timedOut = false;
     const fontConfig = path.join(ROOT, '.tools', 'fonts.conf');
-    const child = spawn(command, args, { cwd: options.cwd, windowsHide: true, shell: false, env: { ...process.env, ...(process.platform === 'win32' && existsSync(fontConfig) && !process.env.FONTCONFIG_FILE ? { FONTCONFIG_FILE: fontConfig } : {}), openin_any: 'p', openout_any: 'p', MIKTEX_ENABLE_INSTALLER: '0' } });
+    const child = spawn(command, args, { cwd: options.cwd, windowsHide: true, shell: false, env: { ...process.env, ...(process.platform === 'win32' && existsSync(fontConfig) && !process.env.FONTCONFIG_FILE ? { FONTCONFIG_FILE: fontConfig } : {}), ...(options.texOutputDir ? { TEXMFOUTPUT: options.texOutputDir } : {}), openin_any: 'p', openout_any: 'p', MIKTEX_ENABLE_INSTALLER: '0' } });
     const append = chunk => { if (log.length < 2_000_000) log += chunk.toString(); };
     child.stdout.on('data', append); child.stderr.on('data', append);
     const timer = setTimeout(() => { timedOut = true; child.kill('SIGKILL'); }, options.timeout || 180000);
@@ -351,7 +351,9 @@ export async function createApp({ dataDir = process.env.TEXDESK_DATA_DIR || path
     if (active.size >= 2) throw fail(429, 'Two projects are compiling. Try again shortly.');
     const { directory, meta, sources } = await getProject(id);
     const engine = meta.engine === 'auto' ? engines.find(e => e.available) : engines.find(e => e.id === meta.engine && e.available);
-    if (!engine) throw fail(503, 'No compiler is available. Run npm run setup:compiler, or install MiKTeX / TeX Live, then refresh compilers in Settings.');
+    if (!engine) throw fail(503, process.platform === 'win32'
+      ? 'No compiler is available. Install MiKTeX or TeX Live, or run npm run setup:compiler on Windows x64. Then refresh compilers in Settings.'
+      : 'No compiler is available. Install TeX Live or put Tectonic on your PATH, then refresh compilers in Settings.');
     const { allowDownloads, sourceRevision } = req.body ?? {};
     if (sourceRevision !== undefined && sourceRevision !== (meta.sourceRevision ?? null)) {
       throw fail(409, 'This project was restored in another tab. Reload before compiling.');
@@ -385,16 +387,18 @@ export async function createApp({ dataDir = process.env.TEXDESK_DATA_DIR || path
       const args = engine.id === 'tectonic'
         ? ['--untrusted', '--synctex', '--keep-logs', '--keep-intermediates', ...(bundle ? ['--only-cached', '--bundle', bundle] : []), '--outdir', outputDir, texPath]
         : ['-no-shell-escape', '-synctex=1', '-interaction=nonstopmode', '-halt-on-error', '-file-line-error', '-output-directory=' + outputDir, texPath];
+      // Older TeX Live releases consult TEXMFOUTPUT when checking absolute paths under openout_any=p.
+      const compilerOptions = { cwd: buildDir, texOutputDir: engine.id === 'tectonic' ? undefined : outputDir };
       let pass;
       try {
         pass = cachedOnly && !bundle
           ? { code: 1, log: 'The Tectonic bundle is not cached. Run a build with downloads enabled.' }
-          : await runner(engine.command, args, { cwd: buildDir });
+          : await runner(engine.command, args, compilerOptions);
       } finally {
         if (cachedOnly) await fs.rm(offlineBundle, { recursive: true, force: true }).catch(console.error);
       }
       log += pass.log;
-      if (pass.code === 0 && engine.id !== 'tectonic') { pass = await runner(engine.command, args, { cwd: buildDir }); log += '\n--- Second pass ---\n' + pass.log; }
+      if (pass.code === 0 && engine.id !== 'tectonic') { pass = await runner(engine.command, args, compilerOptions); log += '\n--- Second pass ---\n' + pass.log; }
       const pdfName = path.basename(meta.mainFile, '.tex') + '.pdf';
       const pdf = path.join(outputDir, pdfName);
       const generated = path.join(outputDir, '.texdesk-entry.pdf');
