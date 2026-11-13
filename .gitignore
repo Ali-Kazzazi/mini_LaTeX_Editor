@@ -1,0 +1,19 @@
+# Dependencies and build output
+/node_modules/
+/dist/
+/coverage/
+
+# Local projects, backups, and compiler binaries
+/.data/
+/.data - Copy*/
+/.tools/
+/.test-data-*/
+/selection-highlight.png
+
+# Local configuration and machine files
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+Thumbs.db

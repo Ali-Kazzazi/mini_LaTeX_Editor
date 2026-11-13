@@ -1,0 +1,36 @@
+﻿{
+    "name":  "mini_latex_editor",
+    "version":  "1.0.0",
+    "private":  true,
+    "type":  "module",
+    "description":  "A local-first LaTeX workspace with a code editor and live PDF preview.",
+    "repository":  {
+                       "type":  "git",
+                       "url":  "git+https://github.com/Ali-Kazzazi/mini_LaTeX_Editor.git"
+                   },
+    "scripts":  {
+                    "build":  "node scripts/build.mjs",
+                    "start":  "node server/index.mjs",
+                    "dev":  "npm run build \u0026\u0026 node --watch server/index.mjs",
+                    "test":  "node --test test/*.test.mjs",
+                    "setup:compiler":  "node scripts/setup-compiler.mjs"
+                },
+    "engines":  {
+                    "node":  "\u003e=22.13.0"
+                },
+    "dependencies":  {
+                         "@codemirror/autocomplete":  "^6.18.0",
+                         "@codemirror/commands":  "^6.8.0",
+                         "@codemirror/language":  "^6.11.0",
+                         "@codemirror/legacy-modes":  "^6.5.0",
+                         "@codemirror/search":  "^6.5.0",
+                         "@codemirror/state":  "^6.5.0",
+                         "@codemirror/view":  "^6.36.0",
+                         "express":  "^5.1.0",
+                         "fflate":  "^0.8.2",
+                         "pdfjs-dist":  "^6.4.299"
+                     },
+    "devDependencies":  {
+                            "esbuild":  "^0.25.0"
+                        }
+}

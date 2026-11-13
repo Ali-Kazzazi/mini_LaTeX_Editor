@@ -1,0 +1,10 @@
+import { build } from 'esbuild';
+import fs from 'node:fs/promises';
+await fs.mkdir('dist', { recursive: true });
+await build({ entryPoints: ['src/app.js'], bundle: true, format: 'esm', outdir: 'dist', minify: true, sourcemap: true, target: ['es2022'], loader: { '.css': 'css' } });
+await fs.copyFile('src/index.html', 'dist/index.html');
+await fs.copyFile('node_modules/pdfjs-dist/legacy/build/pdf.worker.min.mjs', 'dist/pdf.worker.min.mjs');
+await fs.cp('node_modules/pdfjs-dist/cmaps', 'dist/cmaps', { recursive: true });
+await fs.cp('node_modules/pdfjs-dist/standard_fonts', 'dist/standard_fonts', { recursive: true });
+await fs.cp('node_modules/pdfjs-dist/wasm', 'dist/wasm', { recursive: true });
+console.log('Built mini_LaTeX_Editor into dist/');
