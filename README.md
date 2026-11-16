@@ -206,8 +206,10 @@ lualatex -interaction=nonstopmode -halt-on-error main.tex
 Use **Import folder** or **Import ZIP** from the project menu to copy a project into mini_LaTeX_Editor. You can export a project ZIP from Overleaf and import it here. Keep all source, image, bibliography, and custom class files together, then select the main `.tex` file and the compiler the project expects. Relative paths in commands such as `\input{chapters/intro}` resolve from the project root.
 
 - Turn on **Auto** to compile after edits. The editor saves source files automatically.
-- Use **Logs & output** to read the compiler log. When mini_LaTeX_Editor can identify a project file and line, click the error to jump to the source. A failed build keeps the last successful PDF available.
-- Use **Jump to PDF** in the editor toolbar or double-click a page in the preview. Recompile after editing to refresh SyncTeX locations.
+- Use **Problems** to jump to source errors or switch to **Raw log** for the compiler output. If compilation fails, the preview keeps the last successful PDF and labels it accordingly.
+- Use **Go to PDF** in the source toolbar to find the cursor's location in the PDF. To go the other way, choose **Go to source** in the PDF toolbar and click or tap the text. Alt + double-click in the PDF also works. Recompile after editing to refresh the links.
+- Use **Find in PDF** to search the compiled document. Recompiling preserves your page and zoom.
+- Use **Ctrl+P** (**Command+P** on macOS) to open a file by name. The editor remembers open files, cursor positions, and split size for each project in the current browser.
 - Use **History** to compare or restore one of the ten most recent checkpoints, including recovery checkpoints made before restores. Recompile after restoring to update the PDF.
 - Use **Export source** to save a ZIP of the current project files.
 
@@ -216,7 +218,7 @@ Use **Import folder** or **Import ZIP** from the project menu to copy a project 
 | Symptom | What to check |
 | --- | --- |
 | Compiler shows **Not found** | Run its `--version` check in the same terminal that starts mini_LaTeX_Editor. Confirm `PATH` or set the matching `TEXDESK_*` executable path. Restart the server and refresh compilers. |
-| A class or package file is missing | Check the filename in **Logs & output**. For Tectonic, try a build with downloads enabled. For MiKTeX, install the package in MiKTeX Console. For TeX Live or MacTeX, install it using the package manager for that installation. For project-specific files, include them in the import. |
+| A class or package file is missing | Check the filename in **Problems → Raw log**. For Tectonic, try a build with downloads enabled. For MiKTeX, install the package in MiKTeX Console. For TeX Live or MacTeX, install it using the package manager for that installation. For project-specific files, include them in the import. |
 | `fontspec` reports an engine or font error | Select XeLaTeX, LuaLaTeX, or Tectonic as appropriate for the template. Install the font named by the document or use a font available on the machine. |
 | LaTeX fails on an imported project | Check the main document, original compiler, required files, and paths. Try the minimal example to confirm the toolchain before debugging the template. |
 | PDF is stale | Open the log and fix the first error. Then recompile. mini_LaTeX_Editor continues showing the last successful PDF after a failed build. |

@@ -12,39 +12,69 @@
 <body>
   <div id="app">
     <header class="topbar">
-      <a class="brand" href="/" aria-label="mini_LaTeX_Editor home"><span class="brand-mark">T<span>ε</span>X</span><span>mini_LaTeX_Editor<span class="local-label">LOCAL</span></span></a>
+      <a class="brand" href="/" aria-label="mini_LaTeX_Editor home"><span class="brand-mark">T<span>ε</span>X</span><span>mini_LaTeX_Editor</span></a>
       <span class="header-divider"></span>
       <button id="project-switch" class="project-switch" title="Open projects"><span id="project-name">My first document</span><span data-icon="chevron-down"></span></button>
       <span id="save-status" class="save-status" role="status"><span class="status-dot"></span>All changes saved</span>
-      <div class="header-actions"><button id="history" class="button subtle" title="Version history" aria-label="Version history"><span data-icon="refresh"></span><span>History</span></button><button id="export-source" class="button subtle"><span data-icon="download"></span><span>Export source</span></button><button id="settings" class="icon-button" title="Project settings" aria-label="Project settings"><span data-icon="settings"></span></button><span class="avatar" title="Local workspace">Y</span></div>
+      <div class="header-actions">
+        <details id="project-menu" class="project-menu">
+          <summary class="button subtle" aria-label="Project actions"><span data-icon="settings"></span><span>Project</span></summary>
+          <div class="project-menu-items"><button id="settings">Project settings</button><button id="history">Version history</button><button id="export-source">Export source ZIP</button><button id="help">Keyboard shortcuts</button></div>
+        </details>
+        <div class="compile-actions"><label class="auto-label" title="Compile two seconds after editing"><span>Auto</span><input type="checkbox" id="auto-compile" role="switch" /><span class="switch-track"></span></label><button id="compile" class="button primary"><span data-icon="play"></span><span>Recompile</span><kbd>Ctrl ↵</kbd></button></div>
+      </div>
     </header>
+    <div class="workspace-bar">
+      <nav class="view-switch" aria-label="Workspace view">
+        <button type="button" data-workspace-view="split" aria-pressed="true">Split</button>
+        <button type="button" data-workspace-view="source" aria-pressed="false">Source</button>
+        <button type="button" data-workspace-view="pdf" aria-pressed="false">PDF</button>
+        <button type="button" data-workspace-view="problems" aria-pressed="false">Problems <span id="problem-count" hidden></span></button>
+      </nav>
+      <button type="button" id="build-problem" class="build-problem" hidden></button>
+    </div>
+    <div id="build-banner" class="build-banner" role="status" hidden></div>
     <main class="workspace">
       <aside class="sidebar" id="sidebar">
-        <div class="sidebar-heading"><span>PROJECT FILES</span><div class="inline-actions"><button id="new-file" class="icon-button small" title="New file" aria-label="New file"><span data-icon="file-plus"></span></button><button id="upload-files" class="icon-button small" title="Upload files" aria-label="Upload files"><span data-icon="upload"></span></button></div></div>
+        <div class="sidebar-heading"><span>PROJECT FILES</span><div class="inline-actions"><button id="quick-file" class="icon-button small" title="Open file by name (Ctrl or Command + P)" aria-label="Open file by name"><span data-icon="search"></span></button><button id="new-file" class="icon-button small" title="New file" aria-label="New file"><span data-icon="file-plus"></span></button><button id="upload-files" class="icon-button small" title="Upload files" aria-label="Upload files"><span data-icon="upload"></span></button></div></div>
         <div id="file-tree" class="file-tree" aria-label="Project files"></div>
         <div class="file-actions"><button id="rename-file" class="text-button">Rename</button><span>·</span><button id="delete-file" class="text-button">Delete</button></div>
         <div class="outline-section"><div class="sidebar-heading"><span>DOCUMENT OUTLINE</span><span data-icon="list-tree"></span></div><nav id="outline" aria-label="Document outline"></nav></div>
-        <div class="sidebar-footer"><span class="local-badge"><span data-icon="hard-drive"></span> A space of your own</span><p>Files stay on this computer.</p><button id="projects-link" class="button projects-link"><span data-icon="folder"></span>All projects<span data-icon="arrow-up-right"></span></button></div>
       </aside>
       <div class="sidebar-divider" aria-hidden="true"></div>
       <section class="editor-pane" id="editor-pane" aria-label="LaTeX source editor">
-        <div class="pane-heading"><div class="pane-title"><button id="toggle-sidebar" class="icon-button small" title="Toggle files" aria-label="Toggle file sidebar"><span data-icon="panel-left"></span></button><span>Source</span><span class="subtle-label">LaTeX</span></div><div class="inline-actions"><button id="sync-pdf" class="icon-button small" title="Jump to PDF from the cursor" aria-label="Jump to PDF"><span data-icon="arrow-up-right"></span></button><button id="find" class="icon-button small" title="Find in document (Ctrl+F)" aria-label="Find in document"><span data-icon="search"></span></button><button id="editor-wrap" class="icon-button small active" title="Toggle line wrapping" aria-label="Toggle line wrapping"><span data-icon="wrap"></span></button></div></div>
-        <div id="file-tabs" class="file-tabs" role="tablist" aria-label="Open files"></div>
+        <div class="pane-heading"><div class="pane-title"><button id="toggle-sidebar" class="icon-button small" title="Toggle files" aria-label="Toggle file sidebar"><span data-icon="panel-left"></span></button><span>Source</span><span class="subtle-label">LaTeX</span></div><div class="inline-actions"><button id="sync-pdf" class="text-button sync-action" title="Jump to PDF from the cursor"><span data-icon="arrow-up-right"></span>Go to PDF</button><button id="find" class="icon-button small" title="Find in document (Ctrl+F)" aria-label="Find in document"><span data-icon="search"></span></button><button id="editor-wrap" class="icon-button small active" title="Toggle line wrapping" aria-label="Toggle line wrapping"><span data-icon="wrap"></span></button></div></div>
+        <nav id="file-tabs" class="file-tabs" aria-label="Open files"></nav>
         <div id="editor" class="editor"></div>
         <div id="asset-view" class="asset-view" hidden></div>
-        <div class="editor-status"><span id="cursor-status">Ln 1, Col 1</span><span id="word-count">0 words</span><span>UTF-8</span><span id="saving-label">Autosave on</span></div>
+        <div class="editor-status"><span id="cursor-status">Ln 1, Col 1</span><span id="word-count">0 words</span><span id="saving-label">All changes saved</span></div>
       </section>
-      <div id="resize-handle" class="resize-handle" role="separator" aria-label="Resize editor and PDF preview" aria-orientation="vertical" tabindex="0"></div>
+      <div id="resize-handle" class="resize-handle" role="separator" aria-label="Resize editor and PDF preview" aria-orientation="vertical" aria-controls="editor-pane" aria-valuemin="30" aria-valuemax="70" aria-valuenow="50" tabindex="0"></div>
       <section class="preview-pane" id="preview-pane" aria-label="PDF preview">
-        <div class="pane-heading preview-heading"><div class="pane-title"><span data-icon="file-check"></span><span>PDF preview</span></div><div class="compile-actions"><label class="auto-label" title="Compile two seconds after editing"><span>Auto</span><input type="checkbox" id="auto-compile" role="switch" /><span class="switch-track"></span></label><button id="compile" class="button primary"><span data-icon="play"></span><span>Recompile</span><kbd>Ctrl ↵</kbd></button></div></div>
-        <div class="pdf-toolbar"><div class="page-controls"><button id="prev-page" class="icon-button small" title="Previous page" aria-label="Previous page"><span data-icon="chevron-left"></span></button><input id="page-number" type="number" min="1" value="1" aria-label="Page number" /><span id="page-total">/ 0</span><button id="next-page" class="icon-button small" title="Next page" aria-label="Next page"><span data-icon="chevron-right"></span></button></div><div class="zoom-controls"><button id="zoom-out" class="icon-button small" title="Zoom out" aria-label="Zoom out"><span data-icon="minus"></span></button><button id="zoom-fit" class="zoom-label" title="Fit page to width">Fit width</button><button id="zoom-in" class="icon-button small" title="Zoom in" aria-label="Zoom in"><span data-icon="plus"></span></button></div><button id="download-pdf" class="icon-button small" title="Download PDF" aria-label="Download PDF" disabled><span data-icon="download"></span></button></div>
-        <div id="build-banner" class="build-banner" role="status" hidden></div>
-        <div id="pdf-scroll" class="pdf-scroll"><div id="preview-empty" class="preview-empty"><div class="empty-document"><span data-icon="file-text"></span><i></i><i></i><i></i></div><span class="eyebrow">YOUR IDEAS, BEAUTIFULLY TYPESET</span><h1>A fresh page awaits.</h1><p>Write a little LaTeX, then recompile.<br>Your document will come to life right here.</p><button id="empty-compile" class="button primary"><span data-icon="play"></span>Compile your document</button><span class="shortcut-hint">or press <kbd>Ctrl</kbd> + <kbd>Enter</kbd></span></div><div id="pdf-pages" class="pdf-pages"></div></div>
-        <section class="log-panel" id="log-panel" hidden><div class="log-heading"><div class="inline-actions"><span data-icon="terminal"></span><strong>Compilation log</strong><span id="log-engine" class="subtle-label"></span></div><div class="inline-actions"><button id="copy-log" class="text-button">Copy</button><button id="close-log" class="icon-button small" title="Close log" aria-label="Close compilation log"><span data-icon="x"></span></button></div></div><div id="compile-errors" class="compile-errors" aria-label="Source errors" hidden></div><pre id="log-content">No compilation yet. Your compiler output will appear here.</pre></section>
-        <div class="preview-status"><button id="toggle-log" class="text-button"><span data-icon="terminal"></span>Logs & output<span id="log-dot" class="status-dot neutral"></span></button><span id="build-status">Ready when you are</span></div>
+        <div class="pane-heading preview-heading"><div class="pane-title"><span data-icon="file-check"></span><span>PDF preview</span></div><span id="preview-freshness" class="preview-freshness" hidden></span></div>
+        <div class="pdf-toolbar" role="group" aria-label="PDF tools">
+          <div class="page-controls" role="group" aria-label="Page navigation"><button id="prev-page" class="icon-button small" title="Previous page" aria-label="Previous page"><span data-icon="chevron-left"></span></button><input id="page-number" type="number" min="1" value="1" aria-label="Page number" /><span id="page-total">/ 0</span><button id="next-page" class="icon-button small" title="Next page" aria-label="Next page"><span data-icon="chevron-right"></span></button></div>
+          <div class="zoom-controls" role="group" aria-label="Zoom"><button id="zoom-out" class="icon-button small" title="Zoom out" aria-label="Zoom out"><span data-icon="minus"></span></button><button id="zoom-fit" class="zoom-label" title="Fit page to width">Fit width</button><button id="zoom-in" class="icon-button small" title="Zoom in" aria-label="Zoom in"><span data-icon="plus"></span></button></div>
+          <div class="pdf-actions">
+            <button id="sync-source" class="text-button sync-action" title="Pick a point in the PDF to find its source" aria-pressed="false"><span data-icon="code"></span>Go to source</button>
+            <button id="download-pdf" class="icon-button small" title="Download PDF" aria-label="Download PDF" disabled><span data-icon="download"></span></button>
+          </div>
+          <form id="pdf-find" class="pdf-find" role="search" aria-label="Find in PDF">
+            <input type="search" id="pdf-query" placeholder="Find in PDF" aria-label="Find in PDF" autocomplete="off" disabled />
+            <span id="pdf-find-status" role="status"></span>
+            <button type="button" id="pdf-match-prev" class="icon-button small" aria-label="Previous PDF match" disabled><span data-icon="chevron-left"></span></button>
+            <button id="pdf-match-next" class="icon-button small" aria-label="Next PDF match" disabled><span data-icon="chevron-right"></span></button>
+          </form>
+        </div>
+        <p id="sync-source-hint" class="sync-source-hint" role="status" hidden>Click or tap the PDF text you want to find in the source.</p>
+        <div id="pdf-scroll" class="pdf-scroll"><div id="preview-empty" class="preview-empty"><h1>No PDF yet</h1><p>Compile the main document to preview it here.</p><button id="empty-compile" class="button primary"><span data-icon="play"></span>Compile document</button></div><div id="pdf-pages" class="pdf-pages"></div></div>
+      </section>
+      <section id="log-panel" class="log-panel" aria-label="Build output" hidden>
+        <div class="log-heading"><div class="inline-actions"><button type="button" id="show-errors" class="button subtle" aria-pressed="true">Problems</button><button type="button" id="show-log" class="button subtle" aria-pressed="false">Raw log</button><span id="log-engine" class="subtle-label"></span></div><button id="copy-log" class="text-button" hidden>Copy log</button></div>
+        <div id="compile-errors" class="compile-errors" aria-label="Source errors"></div><pre id="log-content" hidden>No compilation yet. Your compiler output will appear here.</pre>
       </section>
     </main>
-    <footer class="app-footer"><span><span class="status-dot"></span>Local workspace<span class="footer-separator">/</span><span id="engine-status">Checking compiler…</span></span><span><a href="https://github.com/Ali-Kazzazi/mini_LaTeX_Editor" target="_blank" rel="noopener noreferrer">GitHub</a><span class="footer-separator">·</span><button id="help" class="text-button">Keyboard shortcuts</button></span></footer>
+    <footer class="app-footer"><span id="engine-status">Checking compiler…</span><span id="build-status" role="status">Ready to compile</span></footer>
     <input id="file-input" type="file" multiple hidden />
     <input id="folder-input" type="file" webkitdirectory multiple hidden />
     <input id="zip-input" type="file" accept=".zip" hidden />
